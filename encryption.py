@@ -139,10 +139,28 @@ class CryptoManager:
         self._ensure_profile_structure_at(self.profile_dir)
 
     def _ensure_profile_structure_at(self, root: Path) -> None:
+        if root.exists() and not root.is_dir():
+            self._replace_conflicting_file(root)
         root.mkdir(parents=True, exist_ok=True)
         required = ["cookies", "cache", "history", "sessions", "extensions", "downloads"]
         for name in required:
-            (root / name).mkdir(parents=True, exist_ok=True)
+            target = root / name
+            if target.exists() and not target.is_dir():
+                self._replace_conflicting_file(target)
+            target.mkdir(parents=True, exist_ok=True)
+
+    def _replace_conflicting_file(self, path: Path) -> None:
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        backup_name = f"{path.name}.conflict-{timestamp}.bak"
+        backup_path = path.with_name(backup_name)
+        counter = 1
+        while backup_path.exists():
+            backup_path = path.with_name(f"{backup_name}.{counter}")
+            counter += 1
+        try:
+            path.rename(backup_path)
+        except OSError:
+            path.unlink(missing_ok=True)
 
     def harden_profile_permissions(self, profile_path: Path) -> None:
         if not profile_path.exists():
