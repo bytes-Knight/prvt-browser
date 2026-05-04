@@ -145,6 +145,7 @@ class CryptoManager:
         target.mkdir(parents=True, exist_ok=True)
 
     def _ensure_profile_structure_at(self, root: Path) -> None:
+ codex/fix-all-identified-issues-7srcno
         self.ensure_directory(root)
         required = [
             "cookies",
@@ -157,6 +158,17 @@ class CryptoManager:
         ]
         for name in required:
             self.ensure_directory(root / name)
+=======
+        if root.exists() and not root.is_dir():
+            self._replace_conflicting_file(root)
+        root.mkdir(parents=True, exist_ok=True)
+        required = ["cookies", "cache", "history", "sessions", "extensions", "downloads"]
+        for name in required:
+            target = root / name
+            if target.exists() and not target.is_dir():
+                self._replace_conflicting_file(target)
+            target.mkdir(parents=True, exist_ok=True)
+ main
 
     def _replace_conflicting_file(self, path: Path) -> None:
         timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
