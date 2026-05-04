@@ -416,7 +416,8 @@ class SecureBrowserController(QObject):
             self.launch_grace_until = time.monotonic() + 8
             if open_url:
                 user_data = self._brave_user_data_dir()
-                user_data.mkdir(parents=True, exist_ok=True)
+                self.crypto.ensure_directory(self.crypto.profile_dir)
+                self.crypto.ensure_directory(user_data)
                 for exe in self._candidate_brave_paths():
                     try:
                         subprocess.Popen(
@@ -433,7 +434,8 @@ class SecureBrowserController(QObject):
             return True
 
         user_data = self._brave_user_data_dir()
-        user_data.mkdir(parents=True, exist_ok=True)
+        self.crypto.ensure_profile_structure()
+        self.crypto.ensure_directory(user_data)
 
         candidates = self._candidate_brave_paths()
         last_error: OSError | None = None
